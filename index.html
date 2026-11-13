@@ -1,0 +1,162 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Rubik Timer</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: #111318;
+  color: white;
+  font-family: Arial, sans-serif;
+  text-align: center;
+}
+h1 { color: #60a5fa; }
+.scramble {
+  max-width: 800px;
+  margin: 25px auto;
+  padding: 15px;
+  color: #facc15;
+  font-size: 22px;
+  line-height: 1.7;
+}
+.timer {
+  font-size: clamp(65px, 15vw, 120px);
+  font-weight: bold;
+  margin: 65px 0 35px;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+button {
+  padding: 12px 22px;
+  margin: 6px;
+  border: 0;
+  border-radius: 9px;
+  background: #2563eb;
+  color: white;
+  font-size: 16px;
+  cursor: pointer;
+}
+button:hover { background: #3b82f6; }
+#history {
+  max-width: 500px;
+  margin: 25px auto;
+  padding: 0;
+  list-style: none;
+}
+#history li {
+  padding: 12px;
+  margin: 7px;
+  background: #252a35;
+  border-radius: 8px;
+}
+.hint { color: #999; }
+</style>
+</head>
+<body>
+
+<h1> RUBIK TIMER </h1>
+
+<div class="scramble" id="scramble"></div>
+
+<div class="timer" id="timer">0.00</div>
+
+<p class="hint">Nhấn SPACE để bắt đầu / dừng</p>
+
+<button onclick="newScramble()">Scramble mới</button>
+<button onclick="resetTimer()">Reset</button>
+
+<h2>Lịch sử giải</h2>
+<ul id="history"></ul>
+
+<script>
+let running = false;
+let startTime = 0;
+let elapsed = 0;
+let interval = null;
+
+const moves = [
+  "R","R'","R2",
+  "L","L'","L2",
+  "U","U'","U2",
+  "D","D'","D2",
+  "F","F'","F2",
+  "B","B'","B2"
+];
+
+function newScramble() {
+  let result = [];
+  let last = "";
+
+  while (result.length < 20) {
+    let move = moves[Math.floor(Math.random()*moves.length)];
+    let face = move[0];
+
+    if (face !== last) {
+      result.push(move);
+      last = face;
+    }
+  }
+
+  document.getElementById("scramble").textContent =
+    result.join(" ");
+}
+
+function formatTime(ms) {
+  let seconds = ms / 1000;
+  return seconds.toFixed(2);
+}
+
+function updateTimer() {
+  elapsed = Date.now() - startTime;
+  document.getElementById("timer").textContent =
+    formatTime(elapsed);
+}
+
+function startTimer() {
+  running = true;
+  startTime = Date.now() - elapsed;
+  interval = setInterval(updateTimer, 10);
+}
+
+function stopTimer() {
+  running = false;
+  clearInterval(interval);
+
+  elapsed = Date.now() - startTime;
+  document.getElementById("timer").textContent =
+    formatTime(elapsed);
+
+  let li = document.createElement("li");
+  li.textContent = formatTime(elapsed) + " giây";
+  document.getElementById("history").prepend(li);
+
+  elapsed = 0;
+  newScramble();
+}
+
+function resetTimer() {
+  running = false;
+  clearInterval(interval);
+  elapsed = 0;
+  document.getElementById("timer").textContent = "0.00";
+}
+
+document.addEventListener("keydown", function(e) {
+  if (e.code === "Space") {
+    e.preventDefault();
+    if (e.repeat) return;
+
+    if (running) stopTimer();
+    else startTimer();
+  }
+});
+
+newScramble();
+</script>
+
+</body>
+</html>
